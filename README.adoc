@@ -1,0 +1,20 @@
+= Template Repository - Golang
+
+Basic structure for golang projects.
+
+Code:
+
+- Folder structure
+- Sample `dep` configurtion
+- Basic `Makefile`
+- `.editorconfig`
+- `.gitignore`
+
+Services:
+
+- CircleCI
+- GolangCI linter
+- Dependabot
+
+
+GitHub issues / pr templates (don't forget to customize the content!)
