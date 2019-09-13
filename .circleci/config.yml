@@ -1,0 +1,26 @@
+version: 2.1
+
+jobs:
+  ## Regular build running unit tests and linters
+  build:
+    working_directory: /go/src/github.com/maistra/istio-workspace
+    docker:
+      - image: circleci/golang:1.12.9
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - vendor-cache-{{ checksum "Gopkg.lock" }}
+      - run:
+          name: "Runs the build"
+          command: make build-ci
+      - save_cache:
+          key: vendor-cache-{{ checksum "Gopkg.lock" }}
+          paths:
+            - ./vendor
+
+workflows:
+  version: 2.1
+  circleci_build:
+    jobs:
+      - build
