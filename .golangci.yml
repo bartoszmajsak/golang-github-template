@@ -23,7 +23,7 @@ linters-settings:
   lll:
     line-length: 180
   goimports:
-    local-prefixes: github.com/maistra/istio-workspace
+    local-prefixes: github.com/bartoszmajsak/template-golang
   gocritic:
     enabled-tags:
       - performance
@@ -59,7 +59,7 @@ issues:
         - dupl
 
 service:
-  project-path: github.com/maistra/istio-workspace
+  project-path: github.com/bartoszmajsak/template-golang
   golangci-lint-version: 1.17.x # Locks the version to avoid newly introduces linters
   prepare:
     - make lint-prepare

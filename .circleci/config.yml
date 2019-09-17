@@ -3,7 +3,7 @@ version: 2.1
 jobs:
   ## Regular build running unit tests and linters
   build:
-    working_directory: /go/src/github.com/maistra/istio-workspace
+    working_directory: /go/src/github.com/bartoszmajsak/template-golang
     docker:
       - image: circleci/golang:1.12.9
     steps:
