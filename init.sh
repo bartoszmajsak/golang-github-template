@@ -21,4 +21,4 @@ read -p "Executable name: " binary
 test -z "$name" && {
   die "You must specify executable name"
 }
-sed -i "s|PROJECT_NAME:=template-golang|PROJECT_NAME:=${binary}|g" Makefile
+sed -i "s|PROJECT_NAME:=template-golang|BINARY_NAME:=${binary}|g" Makefile
