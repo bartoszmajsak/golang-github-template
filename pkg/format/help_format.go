@@ -51,7 +51,6 @@ func RegisterTemplateFuncs() {
 		}
 		return "`" + flagType + "`"
 	})
-
 }
 
 const (
