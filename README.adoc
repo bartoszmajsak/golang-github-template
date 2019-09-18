@@ -12,9 +12,9 @@ Code:
 
 Services:
 
-- CircleCI
-- GolangCI linter
-- Dependabot
+- https://circleci.com/[CircleCI]
+- https://golangci.com/[GolangCI linter]
+- https://dependabot.com[Dependabot]
 
 
-GitHub issues / pr templates (don't forget to customize the content!)
+GitHub issues / PR templates (don't forget to customize the content!)
