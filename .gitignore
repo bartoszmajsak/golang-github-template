@@ -2,6 +2,7 @@
 *ginkgo-test-results.xml
 
 # Temporary Files
+dist/
 bin/
 build/_output
 build/_test

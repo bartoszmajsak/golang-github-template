@@ -1,10 +1,15 @@
 PROJECT_NAME:=template-golang
-PACKAGE_NAME:=github.com/bartoszmajsak/$(PROJECT_NAME)
+ORG_NAME?=bartoszmajsak
+PACKAGE_NAME:=github.com/$(ORG_NAME)/$(PROJECT_NAME)
 
 PROJECT_DIR:=$(shell pwd)
 BUILD_DIR:=$(PROJECT_DIR)/build
 BINARY_DIR:=$(PROJECT_DIR)/dist
 BINARY_NAME:=binary
+
+GOPATH_1:=$(shell echo ${GOPATH} | cut -d':' -f 1)
+GOBIN=$(GOPATH_1)/bin
+PATH:=${GOBIN}/bin:$(PROJECT_DIR)/bin:$(PATH)
 
 # Call this function with $(call header,"Your message") to see underscored green text
 define header =
@@ -30,13 +35,15 @@ test: ## Runs tests
 	ginkgo -r -v ${args}
 
 .PHONY: clean
-clean: ## Removes build artifacts
-	rm -rf $(BINARY_DIR) $(PROJECT_DIR)/bin/
+clean: ## Lets you start from clean state
+	rm -rf $(BINARY_DIR) $(PROJECT_DIR)/bin/ vendor/
 
 .PHONY: deps
-deps: check-tools ## Fetches all dependencies
+deps:  ## Fetches all dependencies
 	$(call header,"Fetching dependencies")
-	dep ensure -v
+	@go mod download
+	@go mod vendor
+	@go mod tidy
 
 .PHONY: format
 format: ## Removes unneeded imports and formats source code
@@ -49,7 +56,7 @@ lint-prepare: deps
 .PHONY: lint
 lint: lint-prepare ## Concurrently runs a whole bunch of static analysis tools
 	$(call header,"Running a whole bunch of static analysis tools")
-	golangci-lint run
+	golangci-lint run --fix --sort-results
 
 # ##########################################################################
 # Build configuration
@@ -89,20 +96,22 @@ $(BINARY_DIR)/$(BINARY_NAME): $(BINARY_DIR) $(SRCS)
 ##@ Setup
 
 .PHONY: tools
-tools: ## Installs required go tools
+tools: $(PROJECT_DIR)/bin/ginkgo $(PROJECT_DIR)/bin/goimports  ## Installs required go tools
+tools: $(PROJECT_DIR)/bin/golangci-lint
 	$(call header,"Installing required tools")
-	go get -u github.com/golang/dep/cmd/dep
-	go get -u github.com/golangci/golangci-lint/cmd/golangci-lint
-	go get -u golang.org/x/tools/cmd/goimports
-	go get -u github.com/onsi/ginkgo/ginkgo
 
-EXECUTABLES:=dep golangci-lint goimports ginkgo
-CHECK:=$(foreach exec,$(EXECUTABLES),\
-        $(if $(shell which $(exec) 2>/dev/null),,"install"))
-.PHONY: check-tools
-check-tools:
-	$(call header,"Checking required tools")
-	@$(if $(strip $(CHECK)),$(MAKE) -f $(THIS_MAKEFILE) tools,echo "'$(EXECUTABLES)' are installed")
+
+$(PROJECT_DIR)/bin/ginkgo:
+	$(call header,"    Installing ginkgo")
+	GOBIN=$(PROJECT_DIR)/bin go install -mod=readonly github.com/onsi/ginkgo/v2/ginkgo
+
+$(PROJECT_DIR)/bin/goimports:
+	$(call header,"    Installing goimports")
+	GOBIN=$(PROJECT_DIR)/bin go install -mod=readonly golang.org/x/tools/cmd/goimports
+
+$(PROJECT_DIR)/bin/golangci-lint:
+	$(call header,"    Installing golangci-lint")
+	curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(PROJECT_DIR)/bin v1.43.0
 
 ##@ Helpers
 
