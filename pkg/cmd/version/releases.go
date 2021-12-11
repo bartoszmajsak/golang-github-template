@@ -3,10 +3,11 @@ package version
 import (
 	"net/http"
 
-	"github.com/bartoszmajsak/template-golang/version"
-
-	"github.com/google/go-github/github"
+	"emperror.dev/errors"
+	"github.com/google/go-github/v41/github"
 	"golang.org/x/net/context"
+
+	"github.com/bartoszmajsak/template-golang/version"
 )
 
 func LatestRelease() (string, error) {
@@ -17,8 +18,9 @@ func LatestRelease() (string, error) {
 	latestRelease, _, err := client.Repositories.
 		GetLatestRelease(context.Background(), "bartoszmajsak", "template-golang")
 	if err != nil {
-		return "", err
+		return "", errors.Wrap(err, "unable to determine latest released version")
 	}
+
 	return *latestRelease.Name, nil
 }
 

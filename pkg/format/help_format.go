@@ -11,7 +11,7 @@ import (
 // EnhanceHelper wraps helper function with alternative formatting
 // and templates (e.g. asciidoc) based on --helper-format flag
 // Applies to all subcommands.
-// This can be useful when automatically generating documentation for CLI
+// This can be useful when automatically generating documentation for CLI.
 func EnhanceHelper(command *cobra.Command) {
 	originalHelpFunc := command.HelpFunc()
 	command.SetHelpFunc(func(cmd *cobra.Command, i []string) {
@@ -42,6 +42,7 @@ func RegisterTemplateFuncs() {
 				flags = append(flags, *flag)
 			}
 		})
+
 		return flags
 	})
 	cobra.AddTemplateFunc("type", func(flag *pflag.Flag) string {
@@ -49,6 +50,7 @@ func RegisterTemplateFuncs() {
 		if strings.Contains(flagType, "Slice") {
 			return "comma-separated list of " + strings.Replace(flagType, "Slice", "", 1) + "s"
 		}
+
 		return "`" + flagType + "`"
 	})
 }

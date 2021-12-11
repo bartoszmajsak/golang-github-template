@@ -1,18 +1,25 @@
 package config
 
 import (
-	"fmt"
 	"path"
 	"strings"
 
-	"github.com/hashicorp/go-multierror"
-
+	"emperror.dev/errors"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
 )
 
-// SetupConfigSources sets up Viper configuration.
+// SetupConfig defines Viper env var prefixes and type handling when inferring key value.
+func SetupConfig() {
+	viper.Reset()
+	viper.SetEnvPrefix("IKE")
+	viper.AutomaticEnv()
+	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
+	viper.SetTypeByDefaultValue(true)
+}
+
+// SetupConfigSources sets up Viper configuration sources.
 //
 // If specific file path is provided but fails when loading it will return an error.
 //
@@ -27,34 +34,29 @@ import (
 // Environment variables are prefixed with `IKE` and have fully qualified names, for example
 // in case of `develop` command and its `port` flag corresponding environment variable is
 // `IKE_DEVELOP_PORT`.
-func SetupConfigSources(configFile string, notDefault bool) error {
-	viper.Reset()
-	viper.SetEnvPrefix("BINARY_NAME")
-	viper.AutomaticEnv()
-	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
-	viper.SetTypeByDefaultValue(true)
-
+func SetupConfigSources(configFile string, defaultConfigFile bool) error {
 	ext := path.Ext(configFile)
 	viper.SetConfigName(strings.TrimSuffix(path.Base(configFile), ext))
 	if !contains(SupportedExtensions(), strings.TrimPrefix(path.Ext(ext), ".")) {
-		return fmt.Errorf("'%s' extension is not supported. Use one of [%s]", ext, strings.Join(SupportedExtensions(), ", "))
+		return errors.Errorf("'%s' extension is not supported. Use one of [%s]", ext, strings.Join(SupportedExtensions(), ", "))
 	}
 	viper.SetConfigType(ext[1:])
 	viper.AddConfigPath(path.Dir(configFile))
 
 	if err := viper.ReadInConfig(); err != nil {
-		if notDefault {
-			return err
+		if !defaultConfigFile {
+			return errors.WrapWithDetails(err, "failed reading config file", "path", configFile)
 		}
 
-		if _, fileDoesNotExist := err.(viper.ConfigFileNotFoundError); !fileDoesNotExist {
-			return err
+		if !errors.As(err, &viper.ConfigFileNotFoundError{}) {
+			return errors.WrapWithDetails(err, "failed reading config file", "path", configFile)
 		}
 	}
+
 	return nil
 }
 
-// SupportedExtensions returns a slice of all supported config format (as file extensions)
+// SupportedExtensions returns a slice of all supported config format (as file extensions).
 func SupportedExtensions() []string {
 	return viper.SupportedExts
 }
@@ -65,33 +67,44 @@ func contains(s []string, e string) bool {
 			return true
 		}
 	}
+
 	return false
 }
 
-// SyncFlag ensures that if configuration provides a value for a given cmd.flag it will be set back to the flag itself,
+// SyncFullyQualifiedFlag ensures that if configuration provides a value for a given cmd.flag it will be set back to the flag itself,
 // but only if the flag was not set through CLI.
 //
-// This way we can make flags required but still have their values provided by the configuration source
-func SyncFlag(cmd *cobra.Command, flagName string) error { //nolint[:unused]
+// This way we can make flags required but still have their values provided by the configuration source.
+func SyncFullyQualifiedFlag(cmd *cobra.Command, flagName string) error {
 	value := viper.GetString(cmd.Name() + "." + flagName)
 	if value != "" && !cmd.Flag(flagName).Changed {
-		return cmd.Flags().Set(flagName, value)
+		err := cmd.Flags().Set(flagName, value)
+
+		return errors.Wrapf(err, "failed setting flag %s with value %v", flagName, value)
 	}
+	value = viper.GetString(flagName)
+	if value != "" && !cmd.Flag(flagName).Changed {
+		err := cmd.Flags().Set(flagName, value)
+
+		return errors.Wrapf(err, "failed setting flag %s with value %v", flagName, value)
+	}
+
 	return nil
 }
 
-// SyncFlags ensures that if configuration provide a value for any of defined flags it will be set
+// SyncFullyQualifiedFlags ensures that if configuration provide a value for any of defined flags it will be set
 // back to the flag itself.
 //
 // This function iterates over all flags defined for cobra.Command and accumulates errors if they occur while
-// calling SyncFlag for every flag.
-func SyncFlags(cmd *cobra.Command) error { //nolint[:unused]
-	var accErrors *multierror.Error
+// calling SyncFullyQualifiedFlag for every flag.
+func SyncFullyQualifiedFlags(cmd *cobra.Command) error {
+	var errs []error
 	cmd.Flags().VisitAll(func(flag *pflag.Flag) {
-		syncFlagErr := SyncFlag(cmd, flag.Name)
-		accErrors = multierror.Append(accErrors, syncFlagErr)
+		syncFlagErr := SyncFullyQualifiedFlag(cmd, flag.Name)
+		errs = append(errs, syncFlagErr)
 	})
-	return accErrors.ErrorOrNil()
+
+	return errors.Wrap(errors.Combine(errs...), "failed to sync flags")
 }
 
 // BindFullyQualifiedFlag ensures that each flag used in commands is bound to a key using fully qualified name
@@ -103,8 +116,9 @@ func SyncFlags(cmd *cobra.Command) error { //nolint[:unused]
 //
 //	commandName:
 //		flagName: value
-func BindFullyQualifiedFlag(cmd *cobra.Command) func(flag *pflag.Flag) { //nolint[:unused]
+func BindFullyQualifiedFlag(cmd *cobra.Command) func(flag *pflag.Flag) {
 	return func(flag *pflag.Flag) {
 		_ = viper.BindPFlag(cmd.Name()+"."+flag.Name, flag)
+		_ = viper.BindPFlag(flag.Name, flag)
 	}
 }

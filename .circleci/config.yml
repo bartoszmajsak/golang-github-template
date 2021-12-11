@@ -68,7 +68,7 @@ jobs:
             - golang-deps-{{ .Environment.CIRCLE_JOB }}-cache-{{ checksum "go.sum" }}
       - run:
           name: "Run the build"
-          command: make build-ci
+          command: make
       - store_test_results:
           path: ./ginkgo-test-results.xml
       - save_cache:

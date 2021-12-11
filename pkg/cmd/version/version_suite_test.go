@@ -3,21 +3,24 @@ package version_test
 import (
 	"testing"
 
-	"go.uber.org/goleak"
-
-	. "github.com/bartoszmajsak/template-golang/test"
-
-	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
+	"go.uber.org/goleak"
 )
 
 func TestVersion(t *testing.T) {
 	RegisterFailHandler(Fail)
-	RunSpecWithJUnitReporter(t, "Version Suite")
+	RunSpecs(t, "Version Suite")
 }
 
+var current goleak.Option
+
+var _ = SynchronizedBeforeSuite(func() []byte {
+	current = goleak.IgnoreCurrent()
+
+	return []byte{}
+}, func([]byte) {})
+
 var _ = SynchronizedAfterSuite(func() {}, func() {
-	goleak.VerifyNone(GinkgoT(),
-		goleak.IgnoreTopFunction("github.com/bartoszmajsak/template-golang/vendor/github.com/onsi/ginkgo/internal/specrunner.(*SpecRunner).registerForInterrupts"),
-	)
+	goleak.VerifyNone(GinkgoT(), current)
 })

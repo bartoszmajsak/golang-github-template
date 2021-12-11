@@ -1,13 +1,12 @@
 package version_test
 
 import (
+	. "github.com/onsi/ginkgo/v2"
+	. "github.com/onsi/gomega"
 	"gopkg.in/h2non/gock.v1"
 
 	"github.com/bartoszmajsak/template-golang/pkg/cmd/version"
 	v "github.com/bartoszmajsak/template-golang/version"
-
-	. "github.com/onsi/ginkgo"
-	. "github.com/onsi/gomega"
 )
 
 var _ = Describe("Fetching latest release", func() {

@@ -19,12 +19,9 @@ endef
 ##@ Default target (all you need - just run "make")
 .DEFAULT_GOAL:=all
 .PHONY: all
-all: deps format lint compile test ## Runs 'deps format lint test compile' targets
+all: deps tools format lint test compile ## Runs 'deps format lint test compile' targets
 
 ##@ Build
-
-.PHONY: build-ci
-build-ci: deps format compile test # Like 'all', but without linter which is executed as separated PR check
 
 .PHONY: compile
 compile: $(BINARY_DIR)/$(BINARY_NAME) ## Compiles binaries
@@ -32,7 +29,7 @@ compile: $(BINARY_DIR)/$(BINARY_NAME) ## Compiles binaries
 .PHONY: test
 test: ## Runs tests
 	$(call header,"Running tests")
-	ginkgo -r -v ${args}
+	ginkgo -r -v -progress -vet=off -trace --junit-report=ginkgo-test-results.xml ${args}
 
 .PHONY: clean
 clean: ## Lets you start from clean state
@@ -48,7 +45,7 @@ deps:  ## Fetches all dependencies
 .PHONY: format
 format: ## Removes unneeded imports and formats source code
 	$(call header,"Formatting code")
-	goimports -l -w ./pkg/ ./cmd/ ./test/
+	goimports -l -w ./pkg/ ./cmd/
 
 .PHONY: lint-prepare
 lint-prepare: deps
