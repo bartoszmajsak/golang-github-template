@@ -1,20 +1,24 @@
 = Template Repository - Golang
 
-Basic structure for golang projects.
+Basic structure for cli-based golang projects.
 
-Code:
+== Code
 
 - Folder structure
-- Sample `dep` configurtion
-- Basic `Makefile`
+- Sample `go.mod` configuration
+- `Makefile`
 - `.editorconfig`
 - `.gitignore`
 
-Services:
+== Services
 
 - https://circleci.com/[CircleCI]
-- https://golangci.com/[GolangCI linter]
 - https://dependabot.com[Dependabot]
 
+== Setup
+
+Run `init.sh` to customize the project.
+
+== Other goodies
 
 GitHub issues / PR templates (don't forget to customize the content!)
