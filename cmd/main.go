@@ -7,6 +7,7 @@ import (
 
 	"emperror.dev/errors"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 
 	"github.com/bartoszmajsak/template-golang/pkg/cmd/version"
 	"github.com/bartoszmajsak/template-golang/pkg/config"
@@ -43,7 +44,7 @@ func newCmd() *cobra.Command {
 				}()
 			}
 
-			return errors.Wrap(config.SetupConfigSources(configFile, cmd.Flag("config").Changed), "failed setting up the binary.")
+			return errors.Wrap(config.SetupConfigSources(loadConfigFileName(cmd)), "failed setting config sources")
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			shouldPrintVersion, _ := cmd.Flags().GetBool("version")
@@ -84,4 +85,19 @@ func newCmd() *cobra.Command {
 	format.RegisterTemplateFuncs()
 
 	return rootCmd
+}
+
+func loadConfigFileName(cmd *cobra.Command) (configFileName string, defaultConfigSource bool) {
+	configFlag := cmd.Flag("config")
+	configFileName = viper.GetString("config")
+	if configFileName == "" {
+		if configFlag.Changed {
+			configFileName = configFlag.Value.String()
+		} else {
+			configFileName = configFlag.DefValue
+		}
+	}
+	defaultConfigSource = configFlag.DefValue == configFileName
+
+	return
 }
