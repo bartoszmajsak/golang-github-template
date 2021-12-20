@@ -16,7 +16,7 @@ require (
 
 // Testing deps
 require (
-	github.com/onsi/ginkgo/v2 v2.0.0-rc2
+	github.com/onsi/ginkgo/v2 v2.0.0-rc3
 	github.com/onsi/gomega v1.17.0
 	gopkg.in/h2non/gock.v1 v1.1.2
 )
