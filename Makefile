@@ -108,7 +108,7 @@ $(PROJECT_DIR)/bin/goimports:
 
 $(PROJECT_DIR)/bin/golangci-lint:
 	$(call header,"    Installing golangci-lint")
-	curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(PROJECT_DIR)/bin v1.43.0
+	curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(PROJECT_DIR)/bin v1.46.2
 
 ##@ Helpers
 
