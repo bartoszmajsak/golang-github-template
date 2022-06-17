@@ -14,6 +14,7 @@ var _ = Describe("Fetching latest release", func() {
 	BeforeEach(func() {
 		gock.New("https://api.github.com").
 			Get("/repos/bartoszmajsak/template-golang/releases/latest").
+			Persist().
 			Reply(200).
 			File("fixtures/latest_release_is_v.0.0.2.json")
 	})
@@ -33,11 +34,10 @@ var _ = Describe("Fetching latest release", func() {
 
 	It("should determine that v0.0.0 is not latest release", func() {
 		// given
-		latestRelease, err := version.LatestRelease()
-		Expect(err).ToNot(HaveOccurred())
+		currentVersion := v.Version
 
 		// when
-		latest := version.IsLatestRelease(latestRelease)
+		latest := version.IsLatestRelease(currentVersion)
 
 		// then
 		Expect(latest).To(BeFalse())

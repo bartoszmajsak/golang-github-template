@@ -6,8 +6,6 @@ import (
 	"emperror.dev/errors"
 	"github.com/google/go-github/v41/github"
 	"golang.org/x/net/context"
-
-	"github.com/bartoszmajsak/template-golang/version"
 )
 
 func LatestRelease() (string, error) {
@@ -24,6 +22,9 @@ func LatestRelease() (string, error) {
 	return *latestRelease.Name, nil
 }
 
-func IsLatestRelease(latestRelease string) bool {
-	return latestRelease == version.Version
+func IsLatestRelease(releaseVersion string) bool {
+	latestRelease, _ := LatestRelease()
+
+	return releaseVersion == latestRelease
 }
+
