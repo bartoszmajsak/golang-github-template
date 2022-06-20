@@ -3,7 +3,7 @@ module github.com/bartoszmajsak/template-golang
 go 1.17
 
 require (
-	emperror.dev/errors v0.8.0
+	emperror.dev/errors v0.8.1
 	github.com/google/go-github/v41 v41.0.0
 	github.com/onsi/ginkgo v1.16.4
 	github.com/spf13/cobra v1.2.1
